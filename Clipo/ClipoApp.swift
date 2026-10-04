@@ -1,32 +1,23 @@
-//
-//  ClipoApp.swift
-//  Clipo
-//
-//  Created by Weslley Oliveira on 04/10/26.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct ClipoApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+    private let container: ModelContainer
+    private let monitor: ClipboardMonitor
 
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
+    init() {
+        let container = try! ModelContainer(for: ClipItem.self)
+        self.container = container
+        monitor = ClipboardMonitor(context: container.mainContext)
+        monitor.start()
+    }
 
     var body: some Scene {
-        WindowGroup {
+        MenuBarExtra("Clipo", systemImage: "list.clipboard") {
             ContentView()
+                .modelContainer(container)
         }
-        .modelContainer(sharedModelContainer)
+        .menuBarExtraStyle(.window)
     }
 }
